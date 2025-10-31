@@ -1,4 +1,3 @@
-import React from "react";
 import type { SirahEvent } from "../types";
 
 export default function EventCard({ e }: { e: SirahEvent }) {

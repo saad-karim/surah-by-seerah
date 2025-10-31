@@ -30,3 +30,44 @@ export type TimelinePayload = {
   events: SirahEvent[];
   revelations: Revelation[];
 };
+
+export type DetailedSurahItem = {
+  type: "surah";
+  revelation_order: number;
+  name_en: string;
+  name_ar: string;
+  chapter_number: number | number[];
+  verses_range?: string;
+  location: string;
+  themes: string[];
+  notes?: string;
+};
+
+export type DetailedEventItem = {
+  type: "event";
+  name: string;
+  year_ce: number;
+  location: string;
+  linked_surahs: number[];
+  notes?: string;
+};
+
+export type DetailedTimelineItem = DetailedSurahItem | DetailedEventItem;
+
+export type DetailedTimelineStage = {
+  id: string;
+  name: string;
+  period: string;
+  timespan_ce: string;
+  description: string;
+  items: DetailedTimelineItem[];
+};
+
+export type DetailedTimelinePayload = {
+  version: string;
+  stages: DetailedTimelineStage[];
+  metadata: {
+    generated_at: string;
+    notes: string;
+  };
+};
