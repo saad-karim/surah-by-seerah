@@ -101,17 +101,20 @@ body {
   box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
 }
 
-/* Horizontal Timeline Styles */
-.horizontal-timeline {
+/* Vertical Timeline Styles */
+.vertical-timeline {
   padding: 40px 20px;
   background: var(--bg);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .period-labels {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 40px;
   margin-bottom: 40px;
-  padding: 0 60px;
+  flex-wrap: wrap;
 }
 
 .period-section {
@@ -157,14 +160,14 @@ body {
   padding: 40px 0;
 }
 
-.timeline-line-horizontal {
+.timeline-line-vertical {
   position: absolute;
-  top: 60px;
-  left: 60px;
-  right: 60px;
-  height: 4px;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 4px;
   background: linear-gradient(
-    to right,
+    to bottom,
     var(--meccan),
     var(--meccan) 50%,
     var(--medinan) 50%,
@@ -172,79 +175,100 @@ body {
   );
   border-radius: 2px;
   z-index: 1;
+  transform: translateX(-50%);
 }
 
-.stages-container {
+.timeline-sections {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   position: relative;
-  padding: 0 60px;
-  gap: 20px;
+  gap: 80px;
+  padding: 0 20px;
 }
 
-.stage-section {
-  flex: 1;
+.timeline-section {
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+  gap: 30px;
+  align-items: start;
   position: relative;
 }
 
-.stage-marker {
+.events-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-end;
+  min-height: 120px;
+}
+
+.surahs-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.timeline-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   position: relative;
   z-index: 2;
-  text-align: center;
-  margin-bottom: 30px;
 }
 
-.stage-dot {
+.timeline-dot {
   width: 16px;
   height: 16px;
   background: var(--accent);
   border: 4px solid var(--card-bg);
   border-radius: 50%;
-  margin: 0 auto 12px;
   box-shadow: 0 0 0 2px var(--accent);
+  margin-bottom: 8px;
 }
 
-.stage-info h3 {
-  font-size: 1rem;
+.year-label {
+  font-size: 0.8rem;
   font-weight: 600;
-  margin: 0 0 4px;
-  color: var(--fg);
-}
-
-.stage-info p {
-  font-size: 0.85rem;
   color: var(--muted);
-  margin: 0 0 4px;
-}
-
-.stage-info small {
-  font-size: 0.75rem;
-  color: var(--muted);
-  display: block;
-  line-height: 1.3;
-}
-
-.stage-items {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: center;
+  text-align: center;
+  white-space: nowrap;
+  background: var(--card-bg);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
 }
 
 .timeline-item {
   position: relative;
   width: 100%;
-  max-width: 280px;
+  max-width: 300px;
 }
 
-.item-connector {
+.event-item {
+  justify-self: end;
+}
+
+.surah-item {
+  justify-self: start;
+}
+
+.left-connector {
   position: absolute;
-  top: -20px;
-  left: 50%;
-  width: 2px;
-  height: 20px;
+  top: 16px;
+  right: -35px;
+  width: 25px;
+  height: 2px;
   background: var(--border);
-  transform: translateX(-50%);
+}
+
+.right-connector {
+  position: absolute;
+  top: 16px;
+  left: -35px;
+  width: 25px;
+  height: 2px;
+  background: var(--border);
 }
 
 .timeline-card {

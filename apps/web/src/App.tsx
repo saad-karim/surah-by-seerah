@@ -10,9 +10,17 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState<string>("");
 
   useEffect(() => {
-    fetch("/api/detailed-timeline")
+    // Try enriched endpoint first, fallback to regular if it fails
+    fetch("/api/detailed-timeline-enriched")
       .then((r) => r.json())
       .then(setData)
+      .catch((e) => {
+        console.warn("Enriched timeline failed, falling back to regular timeline:", e);
+        // Fallback to regular endpoint
+        return fetch("/api/detailed-timeline")
+          .then((r) => r.json())
+          .then(setData);
+      })
       .catch((e) => setError(String(e)));
   }, []);
 
