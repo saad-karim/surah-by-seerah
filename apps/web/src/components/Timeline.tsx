@@ -8,7 +8,31 @@ interface TimelineProps {
   searchTerm: string;
 }
 
-function TimelineCard({ item, index }: { item: DetailedTimelineItem; index: number }) {
+interface Verse {
+  id: number;
+  verseNumber: number;
+  verseKey: string;
+  textUthmani?: string;
+  translations?: Array<{
+    text: string;
+    resource_name: string;
+  }>;
+}
+
+interface VersesResponse {
+  verses: Verse[];
+  pagination: {
+    current_page: number;
+    total_pages: number;
+    total_records: number;
+  };
+}
+
+function TimelineCard({ item, index, onSurahClick }: { 
+  item: DetailedTimelineItem; 
+  index: number;
+  onSurahClick?: (surah: DetailedSurahItem) => void;
+}) {
   const [isHovered, setIsHovered] = useState(false);
   
   if (item.type === "surah") {
@@ -17,6 +41,8 @@ function TimelineCard({ item, index }: { item: DetailedTimelineItem; index: numb
         className="timeline-card surah-card"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onClick={() => onSurahClick?.(item)}
+        style={{ cursor: 'pointer' }}
       >
         <div className="card-icon">📖</div>
         <div className="card-content">
@@ -70,6 +96,51 @@ function TimelineCard({ item, index }: { item: DetailedTimelineItem; index: numb
 
 export default function Timeline({ payload, periodFilter, themeFilter, searchTerm }: TimelineProps) {
   const [selectedItem, setSelectedItem] = useState<DetailedTimelineItem | null>(null);
+  const [versesModal, setVersesModal] = useState<{
+    surah: DetailedSurahItem;
+    verses: Verse[];
+    loading: boolean;
+    error: string | null;
+    currentPage: number;
+    totalPages: number;
+  } | null>(null);
+
+  const handleSurahClick = async (surah: DetailedSurahItem) => {
+    const chapterNumber = Array.isArray(surah.chapter_number) ? surah.chapter_number[0] : surah.chapter_number;
+    
+    setVersesModal({
+      surah,
+      verses: [],
+      loading: true,
+      error: null,
+      currentPage: 1,
+      totalPages: 1,
+    });
+
+    try {
+      const response = await fetch(`/api/chapters/${chapterNumber}/verses?page=1&perPage=10`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch verses: ${response.statusText}`);
+      }
+      
+      const data: VersesResponse = await response.json();
+      
+      setVersesModal(prev => prev ? {
+        ...prev,
+        verses: data.verses || [],
+        loading: false,
+        currentPage: data.pagination?.current_page || 1,
+        totalPages: data.pagination?.total_pages || 1,
+      } : null);
+    } catch (error) {
+      console.error('Failed to fetch verses:', error);
+      setVersesModal(prev => prev ? {
+        ...prev,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to load verses',
+      } : null);
+    }
+  };
 
   // Organize all items chronologically with events and related surahs
   const timelineData = useMemo(() => {
@@ -214,7 +285,7 @@ export default function Timeline({ payload, periodFilter, themeFilter, searchTer
                 {section.event && (
                   <div className="timeline-item event-item">
                     <div className="item-connector left-connector"></div>
-                    <TimelineCard item={section.event} index={sectionIndex} />
+                    <TimelineCard item={section.event} index={sectionIndex} onSurahClick={handleSurahClick} />
                   </div>
                 )}
               </div>
@@ -230,7 +301,7 @@ export default function Timeline({ payload, periodFilter, themeFilter, searchTer
                 {section.surahs.map((surah, surahIndex) => (
                   <div key={`${sectionIndex}-${surahIndex}`} className="timeline-item surah-item">
                     <div className="item-connector right-connector"></div>
-                    <TimelineCard item={surah} index={surahIndex} />
+                    <TimelineCard item={surah} index={surahIndex} onSurahClick={handleSurahClick} />
                   </div>
                 ))}
               </div>
@@ -283,6 +354,60 @@ export default function Timeline({ payload, periodFilter, themeFilter, searchTer
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Verses Modal */}
+      {versesModal && (
+        <div className="modal-overlay" onClick={() => setVersesModal(null)}>
+          <div className="verses-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{versesModal.surah.name_en} ({versesModal.surah.name_ar})</h2>
+              <button 
+                className="close-btn" 
+                onClick={() => setVersesModal(null)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="modal-content">
+              {versesModal.loading && (
+                <div className="loading">Loading verses...</div>
+              )}
+              
+              {versesModal.error && (
+                <div className="error">Error: {versesModal.error}</div>
+              )}
+              
+              {!versesModal.loading && !versesModal.error && (
+                <div className="verses-list">
+                  {versesModal.verses.map((verse) => (
+                    <div key={verse.id} className="verse-item">
+                      <div className="verse-number">{verse.verseNumber}</div>
+                      <div className="verse-content">
+                        <div className="verse-arabic">{verse.textUthmani || `Verse ${verse.verseNumber} (${verse.verseKey})`}</div>
+                        {verse.translations && verse.translations.length > 0 && (
+                          <div className="verse-translation">
+                            {verse.translations[0].text}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {versesModal.totalPages > 1 && (
+                    <div className="pagination">
+                      <span>
+                        Page {versesModal.currentPage} of {versesModal.totalPages}
+                      </span>
+                      {/* Add pagination controls here if needed */}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

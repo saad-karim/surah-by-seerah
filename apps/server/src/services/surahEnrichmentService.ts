@@ -1,9 +1,25 @@
-import { createQuranApi, type ChapterInfo } from "./quranApi.js";
+import { QuranService } from "./quranClient.js";
 import type {
   DetailedSurahItem,
   DetailedEventItem,
   DetailedTimelinePayload,
 } from "../types.js";
+
+interface ChapterInfo {
+  id: number;
+  revelation_place: string;
+  revelation_order: number;
+  bismillah_pre: boolean;
+  name_simple: string;
+  name_complex: string;
+  name_arabic: string;
+  verses_count: number;
+  pages: number[];
+  translated_name: {
+    language_name: string;
+    name: string;
+  };
+}
 
 interface EnrichedSurahItem extends DetailedSurahItem {
   api_data?: {
@@ -28,15 +44,13 @@ interface EnrichedTimelinePayload
   }>;
 }
 
-interface QuranApiService {}
-
 export class SurahEnrichmentService {
   private chapterCache: Map<number, ChapterInfo> = new Map();
   private isApiAvailable: boolean = true;
-  private quranApi;
+  private quranService: QuranService;
 
-  constructor(service: QuranApiService) {
-    this.quranApi = service;
+  constructor(quranService: QuranService) {
+    this.quranService = quranService;
   }
 
   async getChapterInfo(chapterNumber: number): Promise<ChapterInfo> {
@@ -45,9 +59,27 @@ export class SurahEnrichmentService {
     }
 
     try {
-      const chapterInfo = await this.quranApi.getChapterInfo(chapterNumber);
-      this.chapterCache.set(chapterNumber, chapterInfo);
-      return chapterInfo;
+      const chapterInfo = await this.quranService.getChapterInfo(chapterNumber);
+
+      // Map the QuranJS response to our expected format
+      const mappedChapter: ChapterInfo = {
+        id: chapterInfo.id,
+        revelation_place: chapterInfo.revelationPlace,
+        revelation_order: chapterInfo.revelationOrder,
+        bismillah_pre: chapterInfo.bismillahPre,
+        name_simple: chapterInfo.nameSimple,
+        name_complex: chapterInfo.nameComplex,
+        name_arabic: chapterInfo.nameArabic,
+        verses_count: chapterInfo.versesCount,
+        pages: chapterInfo.pages || [],
+        translated_name: {
+          language_name: chapterInfo.translatedName?.languageName || "english",
+          name: chapterInfo.translatedName?.name || chapterInfo.nameSimple,
+        },
+      };
+
+      this.chapterCache.set(chapterNumber, mappedChapter);
+      return mappedChapter;
     } catch (error) {
       console.error(`Failed to fetch chapter ${chapterNumber} info:`, error);
       throw error;
@@ -156,10 +188,25 @@ export class SurahEnrichmentService {
 
     try {
       console.log("Preloading chapter data from Quran Foundation API...");
-      const chapters = await this.quranApi.getAllChapters();
+      const chapters = await this.quranService.getAllChapters();
 
-      chapters.forEach((chapter) => {
-        this.chapterCache.set(chapter.id, chapter);
+      chapters.forEach((chapter: any) => {
+        const mappedChapter: ChapterInfo = {
+          id: chapter.id,
+          revelation_place: chapter.revelation_place,
+          revelation_order: chapter.revelation_order,
+          bismillah_pre: chapter.bismillah_pre,
+          name_simple: chapter.name_simple,
+          name_complex: chapter.name_complex,
+          name_arabic: chapter.name_arabic,
+          verses_count: chapter.verses_count,
+          pages: chapter.pages || [],
+          translated_name: {
+            language_name: chapter.translated_name?.language_name || "english",
+            name: chapter.translated_name?.name || chapter.name_simple,
+          },
+        };
+        this.chapterCache.set(chapter.id, mappedChapter);
       });
 
       console.log(`Preloaded ${chapters.length} chapters`);
