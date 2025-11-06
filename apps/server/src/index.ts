@@ -57,9 +57,12 @@ app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
     // Format the response to match what the frontend expects
     const formattedVerses = (verses || []).map((verse: any) => ({
       ...verse,
-      textUthmani: verse.words 
-        ? verse.words.filter((word: any) => word.charTypeName === 'word').map((word: any) => word.text).join(' ')
-        : `Verse ${verse.verseNumber}`,
+      textUthmani: verse.textUthmani || verse.textImlaeiSimple || (verse.words 
+        ? verse.words
+            .filter((word: any) => word.charTypeName === 'word')
+            .map((word: any) => word.text || word.codeV1)
+            .join(' ')
+        : `Verse ${verse.verseNumber}`),
       translations: verse.translations || []
     }));
 

@@ -62,7 +62,7 @@ export class QuranService {
           perPage: options?.perPage || 50,
           words: true,
           translations: [20], // English translation
-          fields: 'text_uthmani'
+          fields: { textUthmani: true, textImlaeiSimple: true },
         },
       );
       return response;
