@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import { PAYLOAD } from "./data.js";
-import { PAYLOAD as DETAILED_PAYLOAD } from "./data-detailed-minimal";
+import { PAYLOAD as DETAILED_PAYLOAD } from "./data-detailed";
 import { SurahEnrichmentService } from "./services/surahEnrichmentService.js";
 import { createQuranService } from "./services/quranClient.js";
 
@@ -52,32 +52,47 @@ app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
       return res.status(400).json({ error: "Invalid chapter number" });
     }
 
-    const verses = await quranService.getChapterVerses(chapterNumber, { page, perPage });
-    
+    // Get chapter info to know total verses count
+    const chapterInfo = await quranService.getChapterInfo(chapterNumber);
+    const totalVerses = chapterInfo.versesCount;
+    const totalPages = Math.ceil(totalVerses / perPage);
+
+    const verses = await quranService.getChapterVerses(chapterNumber, {
+      page,
+      perPage,
+    });
+
     // Format the response to match what the frontend expects
     const formattedVerses = (verses || []).map((verse: any) => ({
       ...verse,
-      textUthmani: verse.textUthmani || verse.textImlaeiSimple || (verse.words 
-        ? verse.words
-            .filter((word: any) => word.charTypeName === 'word')
-            .map((word: any) => word.text || word.codeV1)
-            .join(' ')
-        : `Verse ${verse.verseNumber}`),
-      translations: verse.translations || []
+      textUthmani:
+        verse.textUthmani ||
+        verse.textImlaeiSimple ||
+        (verse.words
+          ? verse.words
+              .filter((word: any) => word.charTypeName === "word")
+              .map((word: any) => word.text || word.codeV1)
+              .join(" ")
+          : `Verse ${verse.verseNumber}`),
+      translations: verse.translations || [],
     }));
 
     const response = {
       verses: formattedVerses,
       pagination: {
         current_page: page,
-        total_pages: Math.ceil((verses?.length || 0) / perPage) || 1,
-        total_records: verses?.length || 0
-      }
+        total_pages: totalPages,
+        total_records: totalVerses,
+        per_page: perPage,
+      },
     };
-    
+
     res.json(response);
   } catch (error) {
-    console.error(`Error fetching verses for chapter ${req.params.chapterNumber}:`, error);
+    console.error(
+      `Error fetching verses for chapter ${req.params.chapterNumber}:`,
+      error,
+    );
     res.status(500).json({ error: "Failed to fetch chapter verses" });
   }
 });

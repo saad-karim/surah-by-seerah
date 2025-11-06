@@ -195,11 +195,55 @@ body {
 }
 
 .pagination {
-  text-align: center;
   padding: 20px;
   border-top: 1px solid var(--border);
   background: var(--bg);
   color: var(--muted);
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #2c5aa0;
+  transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+  background: var(--border);
+  color: var(--muted);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pagination-info {
+  text-align: center;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.verses-info {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: normal;
+  margin-top: 2px;
 }
 
 .controls {

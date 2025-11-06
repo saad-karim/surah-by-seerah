@@ -25,6 +25,7 @@ interface VersesResponse {
     current_page: number;
     total_pages: number;
     total_records: number;
+    per_page: number;
   };
 }
 
@@ -130,6 +131,40 @@ export default function Timeline({ payload, periodFilter, themeFilter, searchTer
         verses: data.verses || [],
         loading: false,
         currentPage: data.pagination?.current_page || 1,
+        totalPages: data.pagination?.total_pages || 1,
+      } : null);
+    } catch (error) {
+      console.error('Failed to fetch verses:', error);
+      setVersesModal(prev => prev ? {
+        ...prev,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to load verses',
+      } : null);
+    }
+  };
+
+  const loadVersesPage = async (page: number) => {
+    if (!versesModal) return;
+
+    const chapterNumber = Array.isArray(versesModal.surah.chapter_number) 
+      ? versesModal.surah.chapter_number[0] 
+      : versesModal.surah.chapter_number;
+
+    setVersesModal(prev => prev ? { ...prev, loading: true, error: null } : null);
+
+    try {
+      const response = await fetch(`/api/chapters/${chapterNumber}/verses?page=${page}&perPage=10`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch verses: ${response.statusText}`);
+      }
+      
+      const data: VersesResponse = await response.json();
+      
+      setVersesModal(prev => prev ? {
+        ...prev,
+        verses: data.verses || [],
+        loading: false,
+        currentPage: data.pagination?.current_page || page,
         totalPages: data.pagination?.total_pages || 1,
       } : null);
     } catch (error) {
@@ -398,10 +433,30 @@ export default function Timeline({ payload, periodFilter, themeFilter, searchTer
                   
                   {versesModal.totalPages > 1 && (
                     <div className="pagination">
-                      <span>
-                        Page {versesModal.currentPage} of {versesModal.totalPages}
-                      </span>
-                      {/* Add pagination controls here if needed */}
+                      <div className="pagination-controls">
+                        <button
+                          className="pagination-btn"
+                          onClick={() => loadVersesPage(versesModal.currentPage - 1)}
+                          disabled={versesModal.currentPage === 1 || versesModal.loading}
+                        >
+                          Previous
+                        </button>
+                        
+                        <span className="pagination-info">
+                          Page {versesModal.currentPage} of {versesModal.totalPages}
+                          <span className="verses-info">
+                            ({versesModal.verses.length} verses shown)
+                          </span>
+                        </span>
+                        
+                        <button
+                          className="pagination-btn"
+                          onClick={() => loadVersesPage(versesModal.currentPage + 1)}
+                          disabled={versesModal.currentPage === versesModal.totalPages || versesModal.loading}
+                        >
+                          Next
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
