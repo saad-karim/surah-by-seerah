@@ -84,7 +84,7 @@ body {
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   background: var(--bg);
 }
 
@@ -93,6 +93,12 @@ body {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--fg);
+}
+
+.modal-subtitle {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-top: 4px;
 }
 
 .close-btn {

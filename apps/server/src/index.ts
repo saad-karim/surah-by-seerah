@@ -41,7 +41,67 @@ app.get("/api/detailed-timeline-enriched", async (_req, res) => {
   }
 });
 
-// New endpoint to get chapter verses
+// New endpoint to get ALL verses for a chapter at once
+app.get("/api/chapters/:chapterNumber/verses/all", async (req, res) => {
+  try {
+    const chapterNumber = parseInt(req.params.chapterNumber);
+
+    if (isNaN(chapterNumber) || chapterNumber < 1 || chapterNumber > 114) {
+      return res.status(400).json({ error: "Invalid chapter number" });
+    }
+
+    // Get chapter info first
+    const chapterInfo = await quranService.getChapterInfo(chapterNumber);
+    const totalVerses = chapterInfo.versesCount;
+
+    // Get ALL verses at once by setting perPage to total verses
+    const verses = await quranService.getChapterVerses(chapterNumber, { 
+      page: 1, 
+      perPage: totalVerses 
+    });
+    
+    // Helper function to clean HTML from translation text
+    const cleanHtmlTags = (text: string): string => {
+      return text
+        .replace(/<sup[^>]*>.*?<\/sup>/g, '') // Remove footnote references
+        .replace(/<[^>]*>/g, '') // Remove any remaining HTML tags
+        .trim();
+    };
+    
+    // Format the response to match what the frontend expects
+    const formattedVerses = (verses || []).map((verse: any) => ({
+      ...verse,
+      textUthmani: verse.textUthmani || verse.textImlaeiSimple || (verse.words 
+        ? verse.words
+            .filter((word: any) => word.charTypeName === 'word')
+            .map((word: any) => word.text || word.codeV1)
+            .join(' ')
+        : `Verse ${verse.verseNumber}`),
+      translations: (verse.translations || []).map((translation: any) => ({
+        ...translation,
+        text: cleanHtmlTags(translation.text)
+      }))
+    }));
+
+    const response = {
+      verses: formattedVerses,
+      chapterInfo: {
+        id: chapterInfo.id,
+        name: chapterInfo.nameSimple,
+        arabicName: chapterInfo.nameArabic,
+        totalVerses: totalVerses,
+        revelationPlace: chapterInfo.revelationPlace
+      }
+    };
+    
+    res.json(response);
+  } catch (error) {
+    console.error(`Error fetching all verses for chapter ${req.params.chapterNumber}:`, error);
+    res.status(500).json({ error: "Failed to fetch chapter verses" });
+  }
+});
+
+// Legacy endpoint for paginated verses (keeping for backward compatibility)
 app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
   try {
     const chapterNumber = parseInt(req.params.chapterNumber);
@@ -62,6 +122,14 @@ app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
       perPage,
     });
 
+    // Helper function to clean HTML from translation text
+    const cleanHtmlTags = (text: string): string => {
+      return text
+        .replace(/<sup[^>]*>.*?<\/sup>/g, '') // Remove footnote references
+        .replace(/<[^>]*>/g, '') // Remove any remaining HTML tags
+        .trim();
+    };
+
     // Format the response to match what the frontend expects
     const formattedVerses = (verses || []).map((verse: any) => ({
       ...verse,
@@ -74,7 +142,10 @@ app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
               .map((word: any) => word.text || word.codeV1)
               .join(" ")
           : `Verse ${verse.verseNumber}`),
-      translations: verse.translations || [],
+      translations: (verse.translations || []).map((translation: any) => ({
+        ...translation,
+        text: cleanHtmlTags(translation.text)
+      }))
     }));
 
     const response = {
