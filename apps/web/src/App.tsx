@@ -1,28 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Timeline from "./components/Timeline";
-import type { DetailedTimelinePayload } from "./types";
+import { useTimelineData } from "./hooks/useTimelineData";
 
 export default function App() {
-  const [data, setData] = useState<DetailedTimelinePayload | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error, loading } = useTimelineData();
   const [periodFilter, setPeriodFilter] = useState<string>("All");
   const [themeFilter, setThemeFilter] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState<string>("");
-
-  useEffect(() => {
-    // Try enriched endpoint first, fallback to regular if it fails
-    fetch("/api/detailed-timeline-enriched")
-      .then((r) => r.json())
-      .then(setData)
-      .catch((e) => {
-        console.warn("Enriched timeline failed, falling back to regular timeline:", e);
-        // Fallback to regular endpoint
-        return fetch("/api/detailed-timeline")
-          .then((r) => r.json())
-          .then(setData);
-      })
-      .catch((e) => setError(String(e)));
-  }, []);
 
   if (error)
     return (
@@ -31,7 +15,7 @@ export default function App() {
         <pre>{error}</pre>
       </div>
     );
-  if (!data)
+  if (loading || !data)
     return (
       <div className="container">
         <p>Loading…</p>
