@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import { PAYLOAD } from "./data.js";
-import { PAYLOAD as DETAILED_PAYLOAD } from "./data-detailed";
+import { PAYLOAD as DETAILED_PAYLOAD } from "./data-detailed-backup.js";
 import { SurahEnrichmentService } from "./services/surahEnrichmentService.js";
 import { createQuranService } from "./services/quranClient.js";
 
@@ -55,32 +55,35 @@ app.get("/api/chapters/:chapterNumber/verses/all", async (req, res) => {
     const totalVerses = chapterInfo.versesCount;
 
     // Get ALL verses at once by setting perPage to total verses
-    const verses = await quranService.getChapterVerses(chapterNumber, { 
-      page: 1, 
-      perPage: totalVerses 
+    const verses = await quranService.getChapterVerses(chapterNumber, {
+      page: 1,
+      perPage: totalVerses,
     });
-    
+
     // Helper function to clean HTML from translation text
     const cleanHtmlTags = (text: string): string => {
       return text
-        .replace(/<sup[^>]*>.*?<\/sup>/g, '') // Remove footnote references
-        .replace(/<[^>]*>/g, '') // Remove any remaining HTML tags
+        .replace(/<sup[^>]*>.*?<\/sup>/g, "") // Remove footnote references
+        .replace(/<[^>]*>/g, "") // Remove any remaining HTML tags
         .trim();
     };
-    
+
     // Format the response to match what the frontend expects
     const formattedVerses = (verses || []).map((verse: any) => ({
       ...verse,
-      textUthmani: verse.textUthmani || verse.textImlaeiSimple || (verse.words 
-        ? verse.words
-            .filter((word: any) => word.charTypeName === 'word')
-            .map((word: any) => word.text || word.codeV1)
-            .join(' ')
-        : `Verse ${verse.verseNumber}`),
+      textUthmani:
+        verse.textUthmani ||
+        verse.textImlaeiSimple ||
+        (verse.words
+          ? verse.words
+              .filter((word: any) => word.charTypeName === "word")
+              .map((word: any) => word.text || word.codeV1)
+              .join(" ")
+          : `Verse ${verse.verseNumber}`),
       translations: (verse.translations || []).map((translation: any) => ({
         ...translation,
-        text: cleanHtmlTags(translation.text)
-      }))
+        text: cleanHtmlTags(translation.text),
+      })),
     }));
 
     const response = {
@@ -90,13 +93,16 @@ app.get("/api/chapters/:chapterNumber/verses/all", async (req, res) => {
         name: chapterInfo.nameSimple,
         arabicName: chapterInfo.nameArabic,
         totalVerses: totalVerses,
-        revelationPlace: chapterInfo.revelationPlace
-      }
+        revelationPlace: chapterInfo.revelationPlace,
+      },
     };
-    
+
     res.json(response);
   } catch (error) {
-    console.error(`Error fetching all verses for chapter ${req.params.chapterNumber}:`, error);
+    console.error(
+      `Error fetching all verses for chapter ${req.params.chapterNumber}:`,
+      error,
+    );
     res.status(500).json({ error: "Failed to fetch chapter verses" });
   }
 });
@@ -125,8 +131,8 @@ app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
     // Helper function to clean HTML from translation text
     const cleanHtmlTags = (text: string): string => {
       return text
-        .replace(/<sup[^>]*>.*?<\/sup>/g, '') // Remove footnote references
-        .replace(/<[^>]*>/g, '') // Remove any remaining HTML tags
+        .replace(/<sup[^>]*>.*?<\/sup>/g, "") // Remove footnote references
+        .replace(/<[^>]*>/g, "") // Remove any remaining HTML tags
         .trim();
     };
 
@@ -144,8 +150,8 @@ app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
           : `Verse ${verse.verseNumber}`),
       translations: (verse.translations || []).map((translation: any) => ({
         ...translation,
-        text: cleanHtmlTags(translation.text)
-      }))
+        text: cleanHtmlTags(translation.text),
+      })),
     }));
 
     const response = {
