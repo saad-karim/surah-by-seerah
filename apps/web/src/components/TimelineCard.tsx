@@ -57,8 +57,11 @@ export default function TimelineCard({ item, index, onSurahClick, onItemClick }:
             ))}
           </div>
         </div>
-        {isHovered && item.notes && (
-          <div className="card-tooltip">{item.notes}</div>
+        {item.notes && (
+          <div className="card-notes">
+            <div className="notes-divider"></div>
+            <p className="notes-text">{item.notes}</p>
+          </div>
         )}
       </div>
     );
@@ -79,8 +82,11 @@ export default function TimelineCard({ item, index, onSurahClick, onItemClick }:
           </div>
           <p className="event-location">{item.location}</p>
         </div>
-        {isHovered && item.notes && (
-          <div className="card-tooltip">{item.notes}</div>
+        {item.notes && (
+          <div className="card-notes">
+            <div className="notes-divider"></div>
+            <p className="notes-text">{item.notes}</p>
+          </div>
         )}
       </div>
     );
