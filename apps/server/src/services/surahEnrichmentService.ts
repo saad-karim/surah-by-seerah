@@ -113,10 +113,11 @@ export class SurahEnrichmentService {
         },
       };
 
-      // Update name_en if API provides better translation
+      // Update name_en if API provides better translation AND it's in English
       if (
         chapterInfo.translated_name.name &&
-        chapterInfo.translated_name.name.trim()
+        chapterInfo.translated_name.name.trim() &&
+        !/[\u0600-\u06FF]/.test(chapterInfo.translated_name.name)  // Check if it doesn't contain Arabic characters
       ) {
         enrichedSurah.name_en = chapterInfo.translated_name.name;
       }
