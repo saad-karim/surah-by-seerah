@@ -4,7 +4,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { PAYLOAD } from "./data.js";
-import { PAYLOAD as DETAILED_PAYLOAD } from "./data-detailed-backup.js";
+import { PAYLOAD as DETAILED_PAYLOAD } from "./data.js";
 import { SurahEnrichmentService } from "./services/surahEnrichmentService.js";
 import { createQuranService } from "./services/quranClient.js";
 
@@ -45,7 +45,10 @@ app.get("/api/detailed-timeline-enriched", async (_req, res) => {
       await surahEnrichmentService.enrichTimelinePayload(DETAILED_PAYLOAD);
     res.json(enrichedPayload);
   } catch (error) {
-    console.error("Error serving enriched timeline:", error instanceof Error ? error.message : String(error));
+    console.error(
+      "Error serving enriched timeline:",
+      error instanceof Error ? error.message : String(error),
+    );
     // Fallback to original data if enrichment fails
     res.json(DETAILED_PAYLOAD);
   }

@@ -1,5 +1,5 @@
 import React from "react";
-import type { DetailedTimelinePayload, DetailedTimelineItem, DetailedSurahItem, DetailedEventItem } from "../types";
+import type { DetailedTimelinePayload } from "../types";
 import { useTimelineFiltering } from "../hooks/useTimelineFiltering";
 import { useTimelineSelection } from "../hooks/useTimelineSelection";
 import { useVersesModal } from "../hooks/useVersesModal";
@@ -13,7 +13,11 @@ interface TimelineProps {
   searchTerm: string;
 }
 
-export default function Timeline({ payload, themeFilter, searchTerm }: TimelineProps) {
+export default function Timeline({
+  payload,
+  themeFilter,
+  searchTerm,
+}: TimelineProps) {
   const { selectedItem, selectItem, clearSelection } = useTimelineSelection();
   const {
     versesModal,
@@ -28,7 +32,7 @@ export default function Timeline({ payload, themeFilter, searchTerm }: TimelineP
     payload,
     "All", // Always show all periods
     themeFilter,
-    searchTerm
+    searchTerm,
   );
 
   return (
@@ -48,7 +52,7 @@ export default function Timeline({ payload, themeFilter, searchTerm }: TimelineP
       {/* Timeline Line and Content */}
       <div className="timeline-content">
         <div className="timeline-line-vertical"></div>
-        
+
         {/* Timeline Sections */}
         <div className="timeline-sections">
           {filteredTimelineData.map((section, sectionIndex) => (
@@ -67,13 +71,13 @@ export default function Timeline({ payload, themeFilter, searchTerm }: TimelineP
                   </div>
                 )}
               </div>
-              
+
               {/* Timeline marker */}
               <div className="timeline-marker">
                 <div className="timeline-dot"></div>
                 <div className="year-label">{section.year} CE</div>
               </div>
-              
+
               {/* Surahs on the right */}
               <div className="surahs-column">
                 {section.surahs.map((surah, surahIndex) => (
@@ -98,10 +102,7 @@ export default function Timeline({ payload, themeFilter, searchTerm }: TimelineP
 
       {/* Additional Info Panel */}
       {selectedItem && (
-        <InfoPanel
-          selectedItem={selectedItem}
-          onClose={clearSelection}
-        />
+        <InfoPanel selectedItem={selectedItem} onClose={clearSelection} />
       )}
 
       {/* Verses Modal */}
@@ -117,3 +118,4 @@ export default function Timeline({ payload, themeFilter, searchTerm }: TimelineP
     </div>
   );
 }
+
