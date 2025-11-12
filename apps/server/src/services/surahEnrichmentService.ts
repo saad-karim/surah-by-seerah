@@ -117,7 +117,7 @@ export class SurahEnrichmentService {
       if (
         chapterInfo.translated_name.name &&
         chapterInfo.translated_name.name.trim() &&
-        !/[\u0600-\u06FF]/.test(chapterInfo.translated_name.name)  // Check if it doesn't contain Arabic characters
+        !/[\u0600-\u06FF]/.test(chapterInfo.translated_name.name) // Check if it doesn't contain Arabic characters
       ) {
         enrichedSurah.name_en = chapterInfo.translated_name.name;
       }
@@ -143,15 +143,6 @@ export class SurahEnrichmentService {
   async enrichTimelinePayload(
     payload: DetailedTimelinePayload,
   ): Promise<EnrichedTimelinePayload> {
-    // Check if API credentials are available
-    if (!process.env.QURAN_CLIENT_ID || !process.env.QURAN_CLIENT_SECRET) {
-      console.warn(
-        "Quran API credentials not found. Serving original data without enrichment.",
-      );
-      this.isApiAvailable = false;
-      return payload as EnrichedTimelinePayload;
-    }
-
     try {
       const enrichedStages = await Promise.all(
         payload.stages.map(async (stage) => {
@@ -176,7 +167,10 @@ export class SurahEnrichmentService {
         stages: enrichedStages,
       };
     } catch (error) {
-      console.error("Failed to enrich timeline payload:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Failed to enrich timeline payload:",
+        error instanceof Error ? error.message : String(error),
+      );
       // Return original payload if enrichment completely fails
       return payload as EnrichedTimelinePayload;
     }
@@ -223,4 +217,3 @@ export class SurahEnrichmentService {
 }
 
 export type { EnrichedSurahItem, EnrichedTimelinePayload };
-

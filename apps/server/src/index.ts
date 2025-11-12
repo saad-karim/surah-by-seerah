@@ -8,12 +8,7 @@ import { SurahEnrichmentService } from "./services/surahEnrichmentService.js";
 import { createQuranService } from "./services/quranClient.js";
 
 // Load environment variables from .env file in project root
-dotenv.config({ path: "../../.env" });
-
-// Debug logging for environment variables
-console.log("Environment variables loaded:");
-console.log("QURAN_CLIENT_ID:", process.env.QURAN_CLIENT_ID);
-console.log("QURAN_CLIENT_SECRET:", process.env.QURAN_CLIENT_SECRET);
+// dotenv.config({ path: "../../.env" });
 
 const app = express();
 app.use(cors());
@@ -23,7 +18,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Serve static files from the React build
-const staticPath = path.join(__dirname, "../../web/dist");
+const staticPath = path.join(__dirname, "../web/dist");
+
 app.use(express.static(staticPath));
 
 const quranService = createQuranService({
@@ -31,8 +27,6 @@ const quranService = createQuranService({
   clientSecret: process.env.QURAN_CLIENT_SECRET || "",
 });
 const surahEnrichmentService = new SurahEnrichmentService(quranService);
-// Preload chapter data on startup
-// surahEnrichmentService.preloadChapterData();
 
 // New enriched endpoint that includes Quran Foundation API data
 app.get("/api/timeline", async (_req, res) => {

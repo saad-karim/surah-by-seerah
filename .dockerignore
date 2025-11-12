@@ -1,0 +1,36 @@
+# Dependencies
+node_modules
+apps/*/node_modules
+
+# Build outputs (will be rebuilt in container)
+apps/web/dist
+apps/server/dist
+
+# Environment and config
+.env
+.env.local
+.env.production
+
+# Git
+.git
+.gitignore
+
+# Documentation and assets
+README.md
+design.png
+testdata
+
+# IDE and OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Railway
+.railway
