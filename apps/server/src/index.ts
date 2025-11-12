@@ -23,7 +23,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Serve static files from the React build
-const staticPath = path.join(__dirname, "../../web/dist");
+const staticPath = path.join(__dirname, "../../apps/web/dist");
+console.log("Static path:", staticPath);
+console.log("Directory exists:", require('fs').existsSync(staticPath));
+
 app.use(express.static(staticPath));
 
 const quranService = createQuranService({
