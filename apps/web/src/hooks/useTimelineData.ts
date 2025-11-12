@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import type { DetailedTimelinePayload } from '../types';
+import { useState, useEffect } from "react";
+import type { DetailedTimelinePayload } from "../types";
 
 export function useTimelineData() {
   const [data, setData] = useState<DetailedTimelinePayload | null>(null);
@@ -11,29 +11,24 @@ export function useTimelineData() {
       try {
         setLoading(true);
         // Try enriched endpoint first, fallback to regular if it fails
-        const response = await fetch("/api/detailed-timeline-enriched");
-        
+        const response = await fetch("/api/timeline");
+
         if (!response.ok) {
           throw new Error("Enriched timeline failed");
         }
-        
+
         const timelineData = await response.json();
         setData(timelineData);
       } catch (enrichedError) {
-        console.warn("Enriched timeline failed, falling back to regular timeline:", enrichedError);
-        
-        try {
-          // Fallback to regular endpoint
-          const response = await fetch("/api/detailed-timeline");
-          if (!response.ok) {
-            throw new Error(`Failed to fetch timeline: ${response.statusText}`);
-          }
-          
-          const timelineData = await response.json();
-          setData(timelineData);
-        } catch (fallbackError) {
-          setError(fallbackError instanceof Error ? fallbackError.message : 'Failed to load timeline data');
-        }
+        console.warn(
+          "Enriched timeline failed, falling back to regular timeline:",
+          enrichedError,
+        );
+        setError(
+          enrichedError instanceof Error
+            ? enrichedError.message
+            : "Failed to load timeline data",
+        ); // Clear previous error before fallback
       } finally {
         setLoading(false);
       }
@@ -44,3 +39,4 @@ export function useTimelineData() {
 
   return { data, error, loading };
 }
+

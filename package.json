@@ -8,8 +8,7 @@
     "build": "npm-run-all build:web build:server",
     "build:server": "pnpm --filter sbs-server run build",
     "build:web": "pnpm --filter sbs-web run build",
-    "start": "pnpm --filter sbs-server run start",
-    "build:production": "npm-run-all build:web build:server"
+    "start": "pnpm --filter sbs-server run start"
   },
   "devDependencies": {
     "@types/express": "^5.0.5",

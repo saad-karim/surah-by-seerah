@@ -4,7 +4,6 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { PAYLOAD } from "./data.js";
-import { PAYLOAD as DETAILED_PAYLOAD } from "./data.js";
 import { SurahEnrichmentService } from "./services/surahEnrichmentService.js";
 import { createQuranService } from "./services/quranClient.js";
 
@@ -35,14 +34,11 @@ const surahEnrichmentService = new SurahEnrichmentService(quranService);
 // Preload chapter data on startup
 // surahEnrichmentService.preloadChapterData();
 
-app.get("/api/timeline", (_req, res) => res.json(PAYLOAD));
-app.get("/api/detailed-timeline", (_req, res) => res.json(DETAILED_PAYLOAD));
-
 // New enriched endpoint that includes Quran Foundation API data
-app.get("/api/detailed-timeline-enriched", async (_req, res) => {
+app.get("/api/timeline", async (_req, res) => {
   try {
     const enrichedPayload =
-      await surahEnrichmentService.enrichTimelinePayload(DETAILED_PAYLOAD);
+      await surahEnrichmentService.enrichTimelinePayload(PAYLOAD);
     res.json(enrichedPayload);
   } catch (error) {
     console.error(
@@ -50,7 +46,7 @@ app.get("/api/detailed-timeline-enriched", async (_req, res) => {
       error instanceof Error ? error.message : String(error),
     );
     // Fallback to original data if enrichment fails
-    res.json(DETAILED_PAYLOAD);
+    res.json(PAYLOAD);
   }
 });
 
