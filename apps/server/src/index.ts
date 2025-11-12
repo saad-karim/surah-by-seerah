@@ -45,7 +45,7 @@ app.get("/api/detailed-timeline-enriched", async (_req, res) => {
       await surahEnrichmentService.enrichTimelinePayload(DETAILED_PAYLOAD);
     res.json(enrichedPayload);
   } catch (error) {
-    console.error("Error serving enriched timeline:", error);
+    console.error("Error serving enriched timeline:", error instanceof Error ? error.message : String(error));
     // Fallback to original data if enrichment fails
     res.json(DETAILED_PAYLOAD);
   }
@@ -111,7 +111,7 @@ app.get("/api/chapters/:chapterNumber/verses/all", async (req, res) => {
   } catch (error) {
     console.error(
       `Error fetching all verses for chapter ${req.params.chapterNumber}:`,
-      error,
+      error instanceof Error ? error.message : String(error),
     );
     res.status(500).json({ error: "Failed to fetch chapter verses" });
   }

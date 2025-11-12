@@ -45,7 +45,7 @@ export class QuranService {
       );
       return response;
     } catch (error) {
-      console.error(`Failed to fetch chapter ${chapterNumber}:`, error);
+      console.error(`Failed to fetch chapter ${chapterNumber}:`, error instanceof Error ? error.message : String(error));
       throw error;
     }
   }
@@ -69,7 +69,7 @@ export class QuranService {
     } catch (error) {
       console.error(
         `Failed to fetch verses for chapter ${chapterNumber}:`,
-        error,
+        error instanceof Error ? error.message : String(error),
       );
       throw error;
     }

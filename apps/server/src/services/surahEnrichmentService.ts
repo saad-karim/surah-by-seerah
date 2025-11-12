@@ -176,7 +176,7 @@ export class SurahEnrichmentService {
         stages: enrichedStages,
       };
     } catch (error) {
-      console.error("Failed to enrich timeline payload:", error);
+      console.error("Failed to enrich timeline payload:", error instanceof Error ? error.message : String(error));
       // Return original payload if enrichment completely fails
       return payload as EnrichedTimelinePayload;
     }
