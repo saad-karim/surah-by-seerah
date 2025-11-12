@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import { PAYLOAD } from "./data.js";
 import { PAYLOAD as DETAILED_PAYLOAD } from "./data-detailed-backup.js";
 import { SurahEnrichmentService } from "./services/surahEnrichmentService.js";
@@ -16,6 +18,14 @@ console.log("QURAN_CLIENT_SECRET:", process.env.QURAN_CLIENT_SECRET);
 
 const app = express();
 app.use(cors());
+
+// Get directory paths for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from the React build
+const staticPath = path.join(__dirname, "../../web/dist");
+app.use(express.static(staticPath));
 
 const quranService = createQuranService({
   clientId: process.env.QURAN_CLIENT_ID || "",
@@ -176,7 +186,12 @@ app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
+// Catch-all handler: send back React's index.html file for any non-API routes
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(staticPath, "index.html"));
+});
+
 const port = Number(process.env.PORT) || 4000;
 app.listen(port, () =>
-  console.log(`API listening on http://localhost:${port}`),
+  console.log(`Server running on http://localhost:${port}`),
 );

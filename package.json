@@ -5,9 +5,11 @@
     "dev": "npm-run-all -p dev:server dev:web",
     "dev:server": "pnpm --filter sbs-server run dev",
     "dev:web": "pnpm --filter sbs-web run dev",
-    "build": "npm-run-all build:server build:web",
+    "build": "npm-run-all build:web build:server",
     "build:server": "pnpm --filter sbs-server run build",
-    "build:web": "pnpm --filter sbs-web run build"
+    "build:web": "pnpm --filter sbs-web run build",
+    "start": "pnpm --filter sbs-server run start",
+    "build:production": "npm-run-all build:web build:server"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.5"

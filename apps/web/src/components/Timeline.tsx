@@ -9,12 +9,11 @@ import InfoPanel from "./InfoPanel";
 
 interface TimelineProps {
   payload: DetailedTimelinePayload;
-  periodFilter: string;
   themeFilter: string;
   searchTerm: string;
 }
 
-export default function Timeline({ payload, periodFilter, themeFilter, searchTerm }: TimelineProps) {
+export default function Timeline({ payload, themeFilter, searchTerm }: TimelineProps) {
   const { selectedItem, selectItem, clearSelection } = useTimelineSelection();
   const {
     versesModal,
@@ -27,7 +26,7 @@ export default function Timeline({ payload, periodFilter, themeFilter, searchTer
 
   const filteredTimelineData = useTimelineFiltering(
     payload,
-    periodFilter,
+    "All", // Always show all periods
     themeFilter,
     searchTerm
   );

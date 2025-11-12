@@ -4,7 +4,6 @@ import { useTimelineData } from "./hooks/useTimelineData";
 
 export default function App() {
   const { data, error, loading } = useTimelineData();
-  const [periodFilter, setPeriodFilter] = useState<string>("All");
   const [themeFilter, setThemeFilter] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState<string>("");
 
@@ -33,16 +32,6 @@ export default function App() {
         <div className="controls">
           <div className="filters">
             <select 
-              value={periodFilter} 
-              onChange={(e) => setPeriodFilter(e.target.value)}
-              className="filter-select"
-            >
-              <option value="All">Period: All</option>
-              <option value="Makkah">Makkah</option>
-              <option value="Madinah">Madinah</option>
-            </select>
-            
-            <select 
               value={themeFilter} 
               onChange={(e) => setThemeFilter(e.target.value)}
               className="filter-select"
@@ -69,7 +58,6 @@ export default function App() {
       
       <Timeline 
         payload={data} 
-        periodFilter={periodFilter}
         themeFilter={themeFilter}
         searchTerm={searchTerm}
       />
