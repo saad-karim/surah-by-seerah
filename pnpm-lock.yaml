@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@quranjs/api':
+        specifier: ^1.8.0
+        version: 1.8.0
     devDependencies:
       '@types/express':
         specifier: ^5.0.5

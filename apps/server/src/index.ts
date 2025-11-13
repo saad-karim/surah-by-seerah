@@ -7,20 +7,28 @@ import { PAYLOAD } from "./data.js";
 import { SurahEnrichmentService } from "./services/surahEnrichmentService.js";
 import { createQuranService } from "./services/quranClient.js";
 
-// Load environment variables from .env file in project root
-// dotenv.config({ path: "../../.env" });
-
-const app = express();
-app.use(cors());
-
 // Get directory paths for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Load environment variables from project root
+const envPath = path.join(__dirname, "../../../.env");
+dotenv.config({ path: envPath });
+
+const app = express();
+app.use(cors());
 
 // Serve static files from the React build
 const staticPath = path.join(__dirname, "../../web/dist");
 
 app.use(express.static(staticPath));
+
+console.log("🔍 Environment check:", {
+  QURAN_CLIENT_ID: process.env.QURAN_CLIENT_ID
+    ? `${process.env.QURAN_CLIENT_ID.substring(0, 8)}...`
+    : "MISSING",
+  QURAN_CLIENT_SECRET: process.env.QURAN_CLIENT_SECRET ? "PRESENT" : "MISSING",
+});
 
 const quranService = createQuranService({
   clientId: process.env.QURAN_CLIENT_ID || "",

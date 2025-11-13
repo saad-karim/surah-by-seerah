@@ -27,9 +27,5 @@ RUN pnpm run build:server
 # Expose the port (Railway will set $PORT)
 EXPOSE $PORT
 
-# Add healthcheck
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:$PORT/api/health || exit 1
-
 # Start the server
 CMD ["node", "apps/server/dist/index.js"]
