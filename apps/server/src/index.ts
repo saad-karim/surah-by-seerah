@@ -23,13 +23,6 @@ const staticPath = path.join(__dirname, "../../web/dist");
 
 app.use(express.static(staticPath));
 
-console.log("🔍 Environment check:", {
-  QURAN_CLIENT_ID: process.env.QURAN_CLIENT_ID
-    ? `${process.env.QURAN_CLIENT_ID.substring(0, 8)}...`
-    : "MISSING",
-  QURAN_CLIENT_SECRET: process.env.QURAN_CLIENT_SECRET ? "PRESENT" : "MISSING",
-});
-
 const quranService = createQuranService({
   clientId: process.env.QURAN_CLIENT_ID || "",
   clientSecret: process.env.QURAN_CLIENT_SECRET || "",
@@ -63,13 +56,16 @@ app.get("/api/chapters/:chapterNumber/verses/all", async (req, res) => {
 
     // Get chapter info first
     const chapterInfo = await quranService.getChapterInfo(chapterNumber);
-    const totalVerses = chapterInfo.versesCount;
+    const totalVerses =
+      chapterInfo.versesCount || chapterInfo.verses_count || 50; // fallback to 50 if not available
 
     // Get ALL verses at once by setting perPage to total verses
     const verses = await quranService.getChapterVerses(chapterNumber, {
       page: 1,
       perPage: totalVerses,
     });
+
+    // Use word-by-word translations (reliable and high quality)
 
     // Helper function to clean HTML from translation text
     const cleanHtmlTags = (text: string): string => {
@@ -80,31 +76,63 @@ app.get("/api/chapters/:chapterNumber/verses/all", async (req, res) => {
     };
 
     // Format the response to match what the frontend expects
-    const formattedVerses = (verses || []).map((verse: any) => ({
-      ...verse,
-      textUthmani:
-        verse.textUthmani ||
-        verse.textImlaeiSimple ||
-        (verse.words
-          ? verse.words
-              .filter((word: any) => word.charTypeName === "word")
-              .map((word: any) => word.text || word.codeV1)
-              .join(" ")
-          : `Verse ${verse.verseNumber}`),
-      translations: (verse.translations || []).map((translation: any) => ({
-        ...translation,
-        text: cleanHtmlTags(translation.text),
-      })),
-    }));
+    const formattedVerses = (verses || []).map((verse: any) => {
+      // Use word-by-word translation (reliable and high quality)
+      let verseTranslations: Array<{ text: string; resource_name: string }> = [];
+      
+      if (verse.words && verse.words.length > 0) {
+        const constructedTranslation = verse.words
+          .filter((word: any) => word.char_type_name === "word" || word.charTypeName === "word")
+          .map((word: any) => word.translation?.text || "")
+          .filter((text: string) => text.length > 0)
+          .join(" ");
+
+        if (constructedTranslation) {
+          verseTranslations = [{
+            text: constructedTranslation,
+            resource_name: "English Translation",
+          }];
+        }
+      }
+
+      return {
+        id: verse.id,
+        verseNumber: verse.verse_number || verse.verseNumber,
+        verseKey: verse.verse_key || verse.verseKey,
+        textUthmani:
+          verse.text_uthmani ||
+          verse.textUthmani ||
+          verse.text_imlaei_simple ||
+          verse.textImlaeiSimple ||
+          (verse.words
+            ? verse.words
+                .filter(
+                  (word: any) =>
+                    word.char_type_name === "word" ||
+                    word.charTypeName === "word",
+                )
+                .map(
+                  (word: any) => word.text_uthmani || word.text || word.codeV1,
+                )
+                .join(" ")
+            : `Verse ${verse.verse_number || verse.verseNumber || "Unknown"}`),
+        translations: verseTranslations,
+      };
+    });
 
     const response = {
       verses: formattedVerses,
       chapterInfo: {
         id: chapterInfo.id,
-        name: chapterInfo.nameSimple,
-        arabicName: chapterInfo.nameArabic,
-        totalVerses: totalVerses,
-        revelationPlace: chapterInfo.revelationPlace,
+        name:
+          chapterInfo.nameSimple || chapterInfo.name_simple || chapterInfo.name,
+        arabicName:
+          chapterInfo.nameArabic ||
+          chapterInfo.name_arabic ||
+          chapterInfo.arabic_name,
+        totalVerses: formattedVerses.length || totalVerses,
+        revelationPlace:
+          chapterInfo.revelationPlace || chapterInfo.revelation_place,
       },
     };
 
@@ -148,22 +176,59 @@ app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
     };
 
     // Format the response to match what the frontend expects
-    const formattedVerses = (verses || []).map((verse: any) => ({
-      ...verse,
-      textUthmani:
-        verse.textUthmani ||
-        verse.textImlaeiSimple ||
-        (verse.words
-          ? verse.words
-              .filter((word: any) => word.charTypeName === "word")
-              .map((word: any) => word.text || word.codeV1)
-              .join(" ")
-          : `Verse ${verse.verseNumber}`),
-      translations: (verse.translations || []).map((translation: any) => ({
-        ...translation,
-        text: cleanHtmlTags(translation.text),
-      })),
-    }));
+    const formattedVerses = (verses || []).map((verse: any) => {
+      // Construct translation from word-by-word if verse-level translations aren't available
+      let constructedTranslation = "";
+      if (verse.words && verse.words.length > 0) {
+        constructedTranslation = verse.words
+          .filter(
+            (word: any) =>
+              word.char_type_name === "word" || word.charTypeName === "word",
+          )
+          .map((word: any) => word.translation?.text || "")
+          .filter((text: string) => text.length > 0)
+          .join(" ");
+      }
+
+      return {
+        id: verse.id,
+        verseNumber: verse.verse_number || verse.verseNumber,
+        verseKey: verse.verse_key || verse.verseKey,
+        textUthmani:
+          verse.text_uthmani ||
+          verse.textUthmani ||
+          verse.text_imlaei_simple ||
+          verse.textImlaeiSimple ||
+          (verse.words
+            ? verse.words
+                .filter(
+                  (word: any) =>
+                    word.char_type_name === "word" ||
+                    word.charTypeName === "word",
+                )
+                .map(
+                  (word: any) => word.text_uthmani || word.text || word.codeV1,
+                )
+                .join(" ")
+            : `Verse ${verse.verse_number || verse.verseNumber || "Unknown"}`),
+        translations:
+          verse.translations && verse.translations.length > 0
+            ? verse.translations.map((translation: any) => ({
+                ...translation,
+                text: cleanHtmlTags(translation.text),
+                resource_name:
+                  translation.resource_name || translation.resourceName,
+              }))
+            : constructedTranslation
+              ? [
+                  {
+                    text: constructedTranslation,
+                    resource_name: "Word-by-word translation",
+                  },
+                ]
+              : [],
+      };
+    });
 
     const response = {
       verses: formattedVerses,

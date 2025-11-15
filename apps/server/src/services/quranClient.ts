@@ -80,6 +80,8 @@ export class QuranService {
     const token = await this.getAccessToken();
     const fullUrl = `${this.baseUrl}${endpoint}`;
 
+    // console.log(`🌐 Making API request to: ${fullUrl}`);
+
     const response = await fetch(fullUrl, {
       headers: {
         "x-auth-token": token,
@@ -158,11 +160,9 @@ export class QuranService {
       if (options?.perPage)
         params.append("per_page", options.perPage.toString());
       params.append("words", "true");
-      params.append("translations", "131"); // Dr. Mustafa Khattab, the Clear Quran
-      params.append("fields", "text_uthmani,text_imlaei_simple");
+      params.append("fields", "text_uthmani,text_imlaei_simple"); // Get Arabic text fields
 
       const queryString = params.toString();
-      // const endpoint = `/chapters/${chapterNumber}/verses${queryString ? `?${queryString}` : ""}`;
       const endpoint = `/verses/by_chapter/${chapterNumber}${queryString ? `?${queryString}` : ""}`;
 
       const response = await this.makeAuthenticatedRequest<{ verses: any[] }>(
