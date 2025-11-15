@@ -1,5 +1,3 @@
-import React from "react";
-
 interface Verse {
   id: number;
   verseNumber: number;
@@ -48,7 +46,8 @@ export default function VersesModal({
         <div className="modal-header">
           <div className="modal-header-content">
             <h2>
-              {versesModal.chapterInfo.name} ({versesModal.chapterInfo.arabicName})
+              {versesModal.chapterInfo.name} (
+              {versesModal.chapterInfo.arabicName})
             </h2>
             <div className="modal-subtitle">
               {versesModal.chapterInfo.totalVerses} verses •{" "}
@@ -79,9 +78,13 @@ export default function VersesModal({
                       {verse.textUthmani ||
                         `Verse ${verse.verseNumber} (${verse.verseKey})`}
                     </div>
-                    {verse.translations && verse.translations.length > 0 && (
+                    {verse.translations && verse.translations.length > 0 ? (
                       <div className="verse-translation">
                         {verse.translations[0].text}
+                      </div>
+                    ) : (
+                      <div className="verse-translation" style={{ opacity: 0.6 }}>
+                        English translation not available
                       </div>
                     )}
                   </div>

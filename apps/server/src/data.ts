@@ -104,7 +104,7 @@ export const PAYLOAD: DetailedTimelinePayload = {
           location: "Makkah",
           themes: ["Judgment Day", "Cosmic Signs"],
           notes:
-            "Depicts the dramatic unraveling of the cosmos on the Day of Judgment: the sun wrapped up, stars falling, mountains set in motion, and buried girls being questioned. It emphasizes personal accountability and confirms that the Qur’an is a revelation conveyed by a noble, trustworthy angel, refuting claims that the Prophet ﷺ is a soothsayer or madman.",
+            "Depicts the dramatic unraveling of the cosmos on the Day of Judgment: the sun wrapped up, stars falling, and mountains set in motion. It emphasizes personal accountability and confirms that the Qur’an is a revelation conveyed by a noble, trustworthy angel, refuting claims that the Prophet ﷺ is a soothsayer or madman.",
         },
         {
           type: "surah",

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Timeline from "./components/Timeline";
+import LoadingScreen from "./components/LoadingScreen";
 import { useTimelineData } from "./hooks/useTimelineData";
 
 export default function App() {
@@ -14,25 +15,21 @@ export default function App() {
         <pre>{error}</pre>
       </div>
     );
-  if (loading || !data)
-    return (
-      <div className="container">
-        <p>Loading…</p>
-      </div>
-    );
+  if (loading || !data) return <LoadingScreen />;
 
   return (
     <div className="revelation-journey">
       <header className="journey-header">
         <h1>THE REVELATION JOURNEY</h1>
         <p className="journey-subtitle">
-          Explore the Qur'an as it was revealed — alongside the life of the Prophet ﷺ
+          Explore the Qur'an as it was revealed — alongside the life of the
+          Prophet ﷺ
         </p>
-        
+
         <div className="controls">
           <div className="filters">
-            <select 
-              value={themeFilter} 
+            <select
+              value={themeFilter}
               onChange={(e) => setThemeFilter(e.target.value)}
               className="filter-select"
             >
@@ -43,7 +40,7 @@ export default function App() {
               <option value="Patience">Patience</option>
             </select>
           </div>
-          
+
           <div className="search-box">
             <input
               type="text"
@@ -55,9 +52,9 @@ export default function App() {
           </div>
         </div>
       </header>
-      
-      <Timeline 
-        payload={data} 
+
+      <Timeline
+        payload={data}
         themeFilter={themeFilter}
         searchTerm={searchTerm}
       />

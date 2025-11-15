@@ -182,7 +182,6 @@ export class SurahEnrichmentService {
     }
 
     try {
-      console.log("Preloading chapter data from Quran Foundation API...");
       const chapters = await this.quranService.getAllChapters();
 
       chapters.forEach((chapter: any) => {
@@ -203,8 +202,6 @@ export class SurahEnrichmentService {
         };
         this.chapterCache.set(chapter.id, mappedChapter);
       });
-
-      console.log(`Preloaded ${chapters.length} chapters`);
     } catch (error) {
       console.error("Failed to preload chapter data:", error);
       this.isApiAvailable = false;

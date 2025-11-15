@@ -40,16 +40,6 @@ export class QuranService {
     formData.append("scope", "content");
 
     try {
-      console.log("🔐 Requesting OAuth token with:", {
-        url: tokenUrl,
-        clientId: this.config.clientId,
-        clientIdLength: this.config.clientId?.length || 0,
-        hasSecret: !!this.config.clientSecret,
-        secretLength: this.config.clientSecret?.length || 0,
-        authMethod: "Basic Auth Header",
-        credentialsPreview: credentials.substring(0, 20) + "...",
-      });
-
       const response = await fetch(tokenUrl, {
         method: "POST",
         headers: {
@@ -90,8 +80,6 @@ export class QuranService {
     const token = await this.getAccessToken();
     const fullUrl = `${this.baseUrl}${endpoint}`;
 
-    console.log(`🌐 Making API request to: ${fullUrl}`);
-
     const response = await fetch(fullUrl, {
       headers: {
         "x-auth-token": token,
@@ -99,8 +87,6 @@ export class QuranService {
         "Content-Type": "application/json",
       },
     });
-
-    console.log(`📡 API Response: ${response.status} ${response.statusText}`);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -148,24 +134,10 @@ export class QuranService {
 
   async getChapterInfo(chapterNumber: number) {
     try {
-      console.log(`🔍 Fetching chapter info for chapter ${chapterNumber}`);
-
       // First, let's verify the chapter exists by checking all chapters
       const allChapters = await this.getAllChapters();
       const targetChapter = allChapters.find((ch) => ch.id === chapterNumber);
 
-      if (!targetChapter) {
-        for (const ch of allChapters) {
-          console.log(
-            `Available Chapter - ID: ${ch.id}, Name: ${ch.nameSimple || ch.name_simple}`,
-          );
-        }
-        throw new Error(`Chapter ${chapterNumber} not found`);
-      }
-
-      console.log(
-        `✅ Chapter ${chapterNumber} found: ${targetChapter.nameSimple || targetChapter.name_simple}`,
-      );
       return targetChapter;
     } catch (error) {
       console.error(
@@ -205,6 +177,7 @@ export class QuranService {
       throw error;
     }
   }
+
 }
 
 export function createQuranService(config: QuranServiceConfig): QuranService {
