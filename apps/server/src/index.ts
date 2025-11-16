@@ -60,6 +60,16 @@ app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
       20, // Saheedh International
     );
 
+    // Helper function to clean HTML from translation text
+    const cleanHtmlTags = (text: string): string => {
+      return text
+        .replace(/<sup[^>]*foot_note[^>]*>.*?<\/sup>/gi, "") // Remove specific footnote references
+        .replace(/<sup[^>]*>.*?<\/sup>/gi, "") // Remove any other sup tags
+        .replace(/<[^>]*>/g, "") // Remove any remaining HTML tags
+        .replace(/\s+/g, " ") // Replace multiple whitespaces with single space
+        .trim();
+    };
+
     // Map verses with translations by array index
     const formattedVerses = (verses || []).map((verse: any, index: number) => {
       const verseKey = verse.verse_key;
@@ -72,7 +82,7 @@ app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
       if (translation && translation.text) {
         verseTranslations = [
           {
-            text: translation.text,
+            text: cleanHtmlTags(translation.text),
             resource_name: "Dr. Mustafa Khattab, the Clear Quran",
           },
         ];
