@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import type { DetailedSurahItem } from '../types';
+import { useState, useCallback } from "react";
+import type { DetailedSurahItem } from "../types";
 
 interface Verse {
   id: number;
@@ -26,7 +26,7 @@ interface VersesResponse {
 interface VersesModalState {
   surah: DetailedSurahItem;
   allVerses: Verse[];
-  chapterInfo: VersesResponse['chapterInfo'];
+  chapterInfo: VersesResponse["chapterInfo"];
   loading: boolean;
   error: string | null;
   currentPage: number;
@@ -59,7 +59,7 @@ export function useVersesModal() {
 
     try {
       // Fetch ALL verses at once
-      const response = await fetch(`/api/chapters/${chapterNumber}/verses/all`);
+      const response = await fetch(`/api/chapters/${chapterNumber}/verses`);
       if (!response.ok) {
         throw new Error(`Failed to fetch verses: ${response.statusText}`);
       }
@@ -105,7 +105,8 @@ export function useVersesModal() {
   const getCurrentPageVerses = useCallback(() => {
     if (!versesModal || !versesModal.allVerses) return [];
 
-    const startIndex = (versesModal.currentPage - 1) * versesModal.versesPerPage;
+    const startIndex =
+      (versesModal.currentPage - 1) * versesModal.versesPerPage;
     const endIndex = startIndex + versesModal.versesPerPage;
     return versesModal.allVerses.slice(startIndex, endIndex);
   }, [versesModal]);
@@ -124,3 +125,4 @@ export function useVersesModal() {
     getTotalPages,
   };
 }
+

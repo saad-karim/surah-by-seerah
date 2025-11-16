@@ -46,7 +46,7 @@ app.get("/api/timeline", async (_req, res) => {
 });
 
 // New endpoint to get ALL verses for a chapter at once
-app.get("/api/chapters/:chapterNumber/verses/all", async (req, res) => {
+app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
   try {
     const chapterNumber = parseInt(req.params.chapterNumber);
 
@@ -65,40 +65,34 @@ app.get("/api/chapters/:chapterNumber/verses/all", async (req, res) => {
       perPage: totalVerses,
     });
 
-    // Use word-by-word translations (reliable and high quality)
+    // Fetch translations for all verses in the chapter
+    const translations = await quranService.getChapterTranslations(
+      chapterNumber,
+      20, // Saheedh International
+    );
 
-    // Helper function to clean HTML from translation text
-    const cleanHtmlTags = (text: string): string => {
-      return text
-        .replace(/<sup[^>]*>.*?<\/sup>/g, "") // Remove footnote references
-        .replace(/<[^>]*>/g, "") // Remove any remaining HTML tags
-        .trim();
-    };
+    // Map verses with translations by array index
+    const formattedVerses = (verses || []).map((verse: any, index: number) => {
+      const verseKey = verse.verse_key;
+      const translation = translations[index]; // Map by array index
 
-    // Format the response to match what the frontend expects
-    const formattedVerses = (verses || []).map((verse: any) => {
-      // Use word-by-word translation (reliable and high quality)
-      let verseTranslations: Array<{ text: string; resource_name: string }> = [];
-      
-      if (verse.words && verse.words.length > 0) {
-        const constructedTranslation = verse.words
-          .filter((word: any) => word.char_type_name === "word" || word.charTypeName === "word")
-          .map((word: any) => word.translation?.text || "")
-          .filter((text: string) => text.length > 0)
-          .join(" ");
+      // Prepare translations array for this verse
+      let verseTranslations: Array<{ text: string; resource_name: string }> =
+        [];
 
-        if (constructedTranslation) {
-          verseTranslations = [{
-            text: constructedTranslation,
-            resource_name: "English Translation",
-          }];
-        }
+      if (translation && translation.text) {
+        verseTranslations = [
+          {
+            text: translation.text,
+            resource_name: "Dr. Mustafa Khattab, the Clear Quran",
+          },
+        ];
       }
 
       return {
         id: verse.id,
         verseNumber: verse.verse_number || verse.verseNumber,
-        verseKey: verse.verse_key || verse.verseKey,
+        verseKey: verseKey,
         textUthmani:
           verse.text_uthmani ||
           verse.textUthmani ||
@@ -141,110 +135,6 @@ app.get("/api/chapters/:chapterNumber/verses/all", async (req, res) => {
     console.error(
       `Error fetching all verses for chapter ${req.params.chapterNumber}:`,
       error instanceof Error ? error.message : String(error),
-    );
-    res.status(500).json({ error: "Failed to fetch chapter verses" });
-  }
-});
-
-// Legacy endpoint for paginated verses (keeping for backward compatibility)
-app.get("/api/chapters/:chapterNumber/verses", async (req, res) => {
-  try {
-    const chapterNumber = parseInt(req.params.chapterNumber);
-    const page = parseInt(req.query.page as string) || 1;
-    const perPage = parseInt(req.query.perPage as string) || 10;
-
-    if (isNaN(chapterNumber) || chapterNumber < 1 || chapterNumber > 114) {
-      return res.status(400).json({ error: "Invalid chapter number" });
-    }
-
-    // Get chapter info to know total verses count
-    const chapterInfo = await quranService.getChapterInfo(chapterNumber);
-    const totalVerses = chapterInfo.versesCount;
-    const totalPages = Math.ceil(totalVerses / perPage);
-
-    const verses = await quranService.getChapterVerses(chapterNumber, {
-      page,
-      perPage,
-    });
-
-    // Helper function to clean HTML from translation text
-    const cleanHtmlTags = (text: string): string => {
-      return text
-        .replace(/<sup[^>]*>.*?<\/sup>/g, "") // Remove footnote references
-        .replace(/<[^>]*>/g, "") // Remove any remaining HTML tags
-        .trim();
-    };
-
-    // Format the response to match what the frontend expects
-    const formattedVerses = (verses || []).map((verse: any) => {
-      // Construct translation from word-by-word if verse-level translations aren't available
-      let constructedTranslation = "";
-      if (verse.words && verse.words.length > 0) {
-        constructedTranslation = verse.words
-          .filter(
-            (word: any) =>
-              word.char_type_name === "word" || word.charTypeName === "word",
-          )
-          .map((word: any) => word.translation?.text || "")
-          .filter((text: string) => text.length > 0)
-          .join(" ");
-      }
-
-      return {
-        id: verse.id,
-        verseNumber: verse.verse_number || verse.verseNumber,
-        verseKey: verse.verse_key || verse.verseKey,
-        textUthmani:
-          verse.text_uthmani ||
-          verse.textUthmani ||
-          verse.text_imlaei_simple ||
-          verse.textImlaeiSimple ||
-          (verse.words
-            ? verse.words
-                .filter(
-                  (word: any) =>
-                    word.char_type_name === "word" ||
-                    word.charTypeName === "word",
-                )
-                .map(
-                  (word: any) => word.text_uthmani || word.text || word.codeV1,
-                )
-                .join(" ")
-            : `Verse ${verse.verse_number || verse.verseNumber || "Unknown"}`),
-        translations:
-          verse.translations && verse.translations.length > 0
-            ? verse.translations.map((translation: any) => ({
-                ...translation,
-                text: cleanHtmlTags(translation.text),
-                resource_name:
-                  translation.resource_name || translation.resourceName,
-              }))
-            : constructedTranslation
-              ? [
-                  {
-                    text: constructedTranslation,
-                    resource_name: "Word-by-word translation",
-                  },
-                ]
-              : [],
-      };
-    });
-
-    const response = {
-      verses: formattedVerses,
-      pagination: {
-        current_page: page,
-        total_pages: totalPages,
-        total_records: totalVerses,
-        per_page: perPage,
-      },
-    };
-
-    res.json(response);
-  } catch (error) {
-    console.error(
-      `Error fetching verses for chapter ${req.params.chapterNumber}:`,
-      error,
     );
     res.status(500).json({ error: "Failed to fetch chapter verses" });
   }

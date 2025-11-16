@@ -1,4 +1,6 @@
-import { quran } from "@quranjs/api";
+type translations = {
+  text: string;
+};
 
 export interface QuranServiceConfig {
   clientId: string;
@@ -168,6 +170,21 @@ export class QuranService {
       const response = await this.makeAuthenticatedRequest<{ verses: any[] }>(
         endpoint,
       );
+
+      // const translations = await this.getSurahTranslations(chapterNumber, 20);
+      // console.log("translations:", translations);
+
+      // const trans = await this.makeAuthenticatedRequest<{
+      //   translations: any[];
+      // }>(`/resources/translations/`);
+      //
+      // const tmps = trans.translations;
+      // for (const t of tmps) {
+      //   if (t.language_name === "english") {
+      //     console.log("translation:", t);
+      //   }
+      // }
+
       return response.verses;
     } catch (error) {
       console.error(
@@ -178,6 +195,71 @@ export class QuranService {
     }
   }
 
+  async getChapterTranslations(surahNumber: number, resourceId: number = 131) {
+    try {
+      // First get chapter info to know total verse count
+      const chapterInfo = await this.getChapterInfo(surahNumber);
+      const totalVerses = chapterInfo.versesCount || chapterInfo.verses_count || 50;
+      
+      let allTranslations: translations[] = [];
+      let page = 1;
+      let hasMorePages = true;
+      const perPage = 50; // API default per page limit
+
+      while (hasMorePages) {
+        const response = await this.makeAuthenticatedRequest<{
+          translations: translations[];
+          pagination?: {
+            current_page: number;
+            total_pages: number;
+            total_records: number;
+            per_page: number;
+          };
+        }>(`/translations/${resourceId}/by_chapter/${surahNumber}?page=${page}&per_page=${perPage}`);
+        
+        const pageTranslations = response.translations || [];
+        allTranslations = allTranslations.concat(pageTranslations);
+        
+        // Check if we have more pages or have reached total verses
+        if (response.pagination) {
+          hasMorePages = page < response.pagination.total_pages;
+        } else {
+          // If no pagination info, check if we have all verses
+          hasMorePages = allTranslations.length < totalVerses;
+        }
+        
+        page++;
+        
+        // Safety break to prevent infinite loop
+        if (page > 10) { // Max 10 pages (500 verses) should cover any chapter
+          break;
+        }
+      }
+
+      return allTranslations;
+    } catch (error) {
+      console.error(
+        `Failed to fetch translations for chapter ${surahNumber}:`,
+        error instanceof Error ? error.message : String(error),
+      );
+      throw error;
+    }
+  }
+
+  async getAyahTranslations(ayahKey: string, resourceId: number = 131) {
+    try {
+      const response = await this.makeAuthenticatedRequest<{
+        translations: translations[];
+      }>(`/translations/${resourceId}/by_ayah/${ayahKey}`);
+      return response.translations;
+    } catch (error) {
+      console.error(
+        `Failed to fetch translations for ayah ${ayahKey}:`,
+        error instanceof Error ? error.message : String(error),
+      );
+      throw error;
+    }
+  }
 }
 
 export function createQuranService(config: QuranServiceConfig): QuranService {
