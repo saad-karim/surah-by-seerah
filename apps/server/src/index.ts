@@ -31,18 +31,7 @@ const surahEnrichmentService = new SurahEnrichmentService(quranService);
 
 // New enriched endpoint that includes Quran Foundation API data
 app.get("/api/timeline", async (_req, res) => {
-  try {
-    const enrichedPayload =
-      await surahEnrichmentService.enrichTimelinePayload(PAYLOAD);
-    res.json(enrichedPayload);
-  } catch (error) {
-    console.error(
-      "Error serving enriched timeline:",
-      error instanceof Error ? error.message : String(error),
-    );
-    // Fallback to original data if enrichment fails
-    res.json(PAYLOAD);
-  }
+  res.json(PAYLOAD);
 });
 
 // New endpoint to get ALL verses for a chapter at once

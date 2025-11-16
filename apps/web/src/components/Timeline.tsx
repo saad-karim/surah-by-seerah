@@ -6,15 +6,18 @@ import { useVersesModal } from "../hooks/useVersesModal";
 import TimelineCard from "./TimelineCard";
 import VersesModal from "./VersesModal";
 import InfoPanel from "./InfoPanel";
+import LoadingScreen from "./LoadingScreen";
 
 interface TimelineProps {
-  payload: DetailedTimelinePayload;
+  payload: DetailedTimelinePayload | null;
+  loading: boolean;
   themeFilter: string;
   searchTerm: string;
 }
 
 export default function Timeline({
   payload,
+  loading,
   themeFilter,
   searchTerm,
 }: TimelineProps) {
@@ -27,6 +30,11 @@ export default function Timeline({
     getCurrentPageVerses,
     getTotalPages,
   } = useVersesModal();
+
+  // Show loading screen if data is loading
+  if (loading || !payload) {
+    return <LoadingScreen />;
+  }
 
   const filteredTimelineData = useTimelineFiltering(
     payload,

@@ -8,15 +8,6 @@ export default function App() {
   const [themeFilter, setThemeFilter] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  if (error)
-    return (
-      <div className="container">
-        <h2>Failed to load</h2>
-        <pre>{error}</pre>
-      </div>
-    );
-  if (loading || !data) return <LoadingScreen />;
-
   return (
     <div className="revelation-journey">
       <header className="journey-header">
@@ -53,11 +44,19 @@ export default function App() {
         </div>
       </header>
 
-      <Timeline
-        payload={data}
-        themeFilter={themeFilter}
-        searchTerm={searchTerm}
-      />
+      {error ? (
+        <div className="error-container">
+          <h2>Failed to load timeline</h2>
+          <pre>{error}</pre>
+        </div>
+      ) : (
+        <Timeline
+          payload={data}
+          loading={loading}
+          themeFilter={themeFilter}
+          searchTerm={searchTerm}
+        />
+      )}
     </div>
   );
 }

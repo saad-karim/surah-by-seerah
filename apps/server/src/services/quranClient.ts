@@ -171,20 +171,6 @@ export class QuranService {
         endpoint,
       );
 
-      // const translations = await this.getSurahTranslations(chapterNumber, 20);
-      // console.log("translations:", translations);
-
-      // const trans = await this.makeAuthenticatedRequest<{
-      //   translations: any[];
-      // }>(`/resources/translations/`);
-      //
-      // const tmps = trans.translations;
-      // for (const t of tmps) {
-      //   if (t.language_name === "english") {
-      //     console.log("translation:", t);
-      //   }
-      // }
-
       return response.verses;
     } catch (error) {
       console.error(
@@ -199,8 +185,9 @@ export class QuranService {
     try {
       // First get chapter info to know total verse count
       const chapterInfo = await this.getChapterInfo(surahNumber);
-      const totalVerses = chapterInfo.versesCount || chapterInfo.verses_count || 50;
-      
+      const totalVerses =
+        chapterInfo.versesCount || chapterInfo.verses_count || 50;
+
       let allTranslations: translations[] = [];
       let page = 1;
       let hasMorePages = true;
@@ -215,11 +202,13 @@ export class QuranService {
             total_records: number;
             per_page: number;
           };
-        }>(`/translations/${resourceId}/by_chapter/${surahNumber}?page=${page}&per_page=${perPage}`);
-        
+        }>(
+          `/translations/${resourceId}/by_chapter/${surahNumber}?page=${page}&per_page=${perPage}`,
+        );
+
         const pageTranslations = response.translations || [];
         allTranslations = allTranslations.concat(pageTranslations);
-        
+
         // Check if we have more pages or have reached total verses
         if (response.pagination) {
           hasMorePages = page < response.pagination.total_pages;
@@ -227,11 +216,12 @@ export class QuranService {
           // If no pagination info, check if we have all verses
           hasMorePages = allTranslations.length < totalVerses;
         }
-        
+
         page++;
-        
+
         // Safety break to prevent infinite loop
-        if (page > 10) { // Max 10 pages (500 verses) should cover any chapter
+        if (page > 10) {
+          // Max 10 pages (500 verses) should cover any chapter
           break;
         }
       }
