@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Timeline from "./components/Timeline";
-import LoadingScreen from "./components/LoadingScreen";
 import { useTimelineData } from "./hooks/useTimelineData";
 
 export default function App() {
-  const { data, error, loading } = useTimelineData();
+  const { data, error } = useTimelineData();
   const [themeFilter, setThemeFilter] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState<string>("");
 
@@ -52,7 +51,6 @@ export default function App() {
       ) : (
         <Timeline
           payload={data}
-          loading={loading}
           themeFilter={themeFilter}
           searchTerm={searchTerm}
         />
