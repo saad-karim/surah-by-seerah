@@ -23,11 +23,19 @@ const staticPath = path.join(__dirname, "../../web/dist");
 
 app.use(express.static(staticPath));
 
+console.log(
+  "Quran Foundation API Client ID:",
+  process.env.QURAN_CLIENT_ID ? process.env.QURAN_CLIENT_ID : "Not Provided",
+);
+console.log(
+  "Quran Foundation API Client Secret:",
+  process.env.QURAN_CLIENT_SECRET ? "Provided" : "Not Provided",
+);
+
 const quranService = createQuranService({
   clientId: process.env.QURAN_CLIENT_ID || "",
   clientSecret: process.env.QURAN_CLIENT_SECRET || "",
 });
-const surahEnrichmentService = new SurahEnrichmentService(quranService);
 
 // New enriched endpoint that includes Quran Foundation API data
 app.get("/api/timeline", async (_req, res) => {
